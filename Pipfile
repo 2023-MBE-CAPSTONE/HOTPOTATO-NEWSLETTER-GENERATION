@@ -6,8 +6,12 @@ name = "pypi"
 [packages]
 boto3 = "*"
 python-dotenv = "*"
+langchain = "*"
+openai = "*"
+awscli = "*"
 
 [dev-packages]
+ipykernel = "*"
 
 [requires]
 python_version = "3.11"
