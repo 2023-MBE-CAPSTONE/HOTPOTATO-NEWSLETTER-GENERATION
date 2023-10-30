@@ -1,0 +1,24 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      # 941088547058.dkr.ecr.ap-northeast-2.amazonaws.com/asc-ewha-docker-prac 를 본인의 Repository URI로 변경
+      # ap-northeast-2을 본인의 region으로 변경
+      - aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 730236588395.dkr.ecr.ap-northeast-2.amazonaws.com/mbe-capstone
+      - REPOSITORY_URI=730236588395.dkr.ecr.ap-northeast-2.amazonaws.com/mbe-capstone
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
