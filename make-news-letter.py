@@ -46,6 +46,7 @@ if __name__ == "__main__":
     ## input
     human_template = """
     너는 이슈와 이슈를 잘 나타내는 대표 키워드를 기반으로 이슈에 대한 반론을 친근한 반말 뉴스레터로 만드는 작가야
+    뉴스레터를 생성할 때 모든 문장 사이에 개행 문자를 넣어줘
     이슈 : {issue_name} 
     긍정입장 대표 키워드: {positive_keyword}
     부정입장 대표 키워드: {negative_keyword}
@@ -76,3 +77,19 @@ if __name__ == "__main__":
     print(f"뉴스레터 생성 소요 시간: {execution_time} 초")
     json_data = output_parser.parse(output)
     print(json_data['positive_article'])
+
+    
+    # db에 insert
+    generated_article_table = dynamodb.Table("generated_article")
+    generated_article_table.put_item(
+
+    Item={
+            "issue_date": today_date,
+            "issue_name": issue_name,
+            "positive_article": json_data["positive_article"],
+            "negative_article": json_data["negative_article"],
+        }
+
+    ) 
+    response = generated_article_table.query(KeyConditionExpression=Key("issue_date").eq("20231101")) 
+    print(response['Items'][0])
