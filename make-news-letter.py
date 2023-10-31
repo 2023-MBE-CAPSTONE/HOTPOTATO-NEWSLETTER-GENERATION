@@ -39,7 +39,9 @@ if __name__ == "__main__":
     ## output
     response_schemas = [
         ResponseSchema(name="positive_article", description="긍정 담론에 대한 뉴스레터"),
-        ResponseSchema(name="negative_article", description="부정 담론에 대한 뉴스레터")
+        ResponseSchema(name="positive_article_title", description="긍정 담론에 대한 쉽고 자극적인 뉴스레터의 제목"),
+        ResponseSchema(name="negative_article", description="부정 담론에 대한 뉴스레터"),
+        ResponseSchema(name="negative_article_title", description="부정 담론에 대한 쉽고 자극적인 뉴스레터의 제목"),
     ]
     output_parser = StructuredOutputParser.from_response_schemas(response_schemas)
     format_instructions = output_parser.get_format_instructions()
@@ -58,7 +60,7 @@ if __name__ == "__main__":
         partial_variables={"format_instructions": format_instructions}
     )
     # load model
-    llm = OpenAI(temperature=0,               # 창의성 (0.0 ~ 2.0) 
+    llm = OpenAI(temperature=0.5,               # 창의성 (0.0 ~ 2.0) 
                  max_tokens=2048,             # 최대 토큰수
                  model_name='gpt-4',  # 모델명
     )
@@ -78,17 +80,20 @@ if __name__ == "__main__":
     json_data = output_parser.parse(output)
     print(json_data['positive_article'])
 
-    
+    item = {
+            "issue_date": today_date,
+            "issue_name": issue_name,
+            "positive_article": json_data["positive_article"],
+            "positive_article_title": json_data["positive_article_title"],
+            "negative_article": json_data["negative_article"],
+            "negative_article_title": json_data["negative_article_title"],
+    }
+    print(item)
     # db에 insert
     generated_article_table = dynamodb.Table("generated_article")
     generated_article_table.put_item(
 
-    Item={
-            "issue_date": today_date,
-            "issue_name": issue_name,
-            "positive_article": json_data["positive_article"],
-            "negative_article": json_data["negative_article"],
-        }
+    Item=item
 
     ) 
     response = generated_article_table.query(KeyConditionExpression=Key("issue_date").eq("20231101")) 
