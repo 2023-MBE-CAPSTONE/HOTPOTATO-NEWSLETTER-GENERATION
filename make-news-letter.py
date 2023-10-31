@@ -8,6 +8,8 @@ import boto3
 import os
 import time
 
+from datetime import datetime
+
 
 
 if __name__ == "__main__":
@@ -20,13 +22,16 @@ if __name__ == "__main__":
         aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
         aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
     )
+    # get today date
+    today = datetime.now()
+    today_date = today.strftime('%Y%m%d')
 
-    table = dynamodb.Table('issueKeyword')
-    response = table.query(KeyConditionExpression=Key("issueDate").eq(20231030))['Items'][0]
+    table = dynamodb.Table("issue_keyword")
+    response = table.query(KeyConditionExpression=Key("issue_date").eq(today_date))['Items'][0]
 
-    issue_name = response["issueName"]
-    negative_keyword = response['negativeKeyword']
-    positive_keyword = response['positiveKeyword']
+    issue_name = response["issue_name"]
+    negative_keyword = response["negative_keyword_list"]
+    positive_keyword = response["positive_keyword_list"]
 
     print(f"생성할 뉴스레터 주제:{issue_name}")
 
@@ -58,9 +63,9 @@ if __name__ == "__main__":
     )
     # get output
     _input = prompt.format_prompt(
-        issue_name="의대 정원 확대",
-        positive_keyword=["찬성", "특권", "이기적"],
-        negative_keyword=["반대", "파업", "피부과"],
+        issue_name=issue_name,
+        positive_keyword=positive_keyword,
+        negative_keyword=negative_keyword,
     )
     start_time = time.time()
     output = llm(_input.to_string())
