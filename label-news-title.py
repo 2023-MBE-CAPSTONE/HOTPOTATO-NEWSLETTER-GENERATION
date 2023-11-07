@@ -44,7 +44,7 @@ if __name__ == "__main__":
     # make prompt
     ## output
     response_schemas = [
-        ResponseSchema(name="news_title_label_list", description="뉴스 제목을 '긍정'  또는  '부정' 또는 '판단할 수 없음'으로 레이블링한 결과를 저장한 리스트")
+        ResponseSchema(name="news_title_label_list", description="뉴스 제목을 key, 레이블 결과를 value로 갖는 json들이 들어있는 리스트")
     ]
     output_parser = StructuredOutputParser.from_response_schemas(response_schemas)
     format_instructions = output_parser.get_format_instructions()
@@ -78,14 +78,14 @@ if __name__ == "__main__":
         news_title_list=news_title_list,
     )
     start_time = time.time()
-    # # output = llm(_input.to_string())
-    # end_time = time.time()
-    # execution_time = end_time - start_time
+    output = llm(_input.to_string())
+    end_time = time.time()
+    execution_time = end_time - start_time
 
-    # # 실행 시간을 출력합니다.
-    # print(f"레이블 생성 소요 시간: {execution_time} 초")
-    # # json_data = output_parser.parse(output)
-    # print(json_data['news_title_label_list'])
+    # 실행 시간을 출력합니다.
+    print(f"레이블 생성 소요 시간: {execution_time} 초")
+    json_data = output_parser.parse(output)
+    print(json_data['news_title_label_list'])
 
     
     # db에 insert
@@ -96,7 +96,7 @@ if __name__ == "__main__":
             },
             AttributeUpdates={
               'news_title_label_list': {
-                'Value': ["test"],
+                'Value': json_data['news_title_label_list'],
                 'Action': 'PUT'
               }
             }
